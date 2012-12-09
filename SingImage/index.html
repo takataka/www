@@ -1,0 +1,62 @@
+<html>
+<head>
+    <title>SingImage</title>
+    <meta name="author" content="Michael Jacobs">
+    <script src="encode.js" type="text/javascript" charset="utf-8"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+    <!-- Source image. Change me! Image must be local, else you'll get security errors and failure -->
+    <img id="sourceImage" src="images/jacobs.jpg" alt="Canvas Source" />
+
+    <canvas id="magicArea"></canvas>
+
+    <script type="text/javascript">
+        $(function() {
+
+            var output = new Audio();
+            if(!output.mozWriteAudio) {
+                document.write("CAN ONLY SING IMAGES IN FIREFOXES THAT SUPPORT mozWriteAudio(). SAD :((((((");
+                return;
+            }
+            var samples = [];
+    
+            var image = $("#sourceImage")
+            var height = image.height();
+            var width = image.width();
+    
+            var canvas = $("#magicArea").attr({"height":height, "width":width}).get(0);
+            var context = canvas.getContext("2d");
+            
+            // get image obj
+            image = image.get(0);
+    
+            // draw image to canvas
+            context.drawImage(image, 0, 0);
+    
+            // get the pixel data
+            var imgd = context.getImageData(0, 0, width, height);
+            var pix = imgd.data;
+    
+            // new sample array
+            samples = new Float32Array(pix.length/4);
+    
+            // set up a mono channel at 44.1Khz
+            output.mozSetup(1, 44100);
+            // 
+            for (var i = 0, n = pix.length; i < n; i += 4) {
+                // modify image colors
+                pix[i] *= .3;
+                pix[i+1] *= .59;
+                pix[i+2] *= .11;
+                // write pix to array
+                samples[i]= pix[i] + pix[i+1] + pix[i+2];
+            }
+            // write sounds
+            output.mozWriteAudio(samples);
+            // show modified image
+            context.putImageData(imgd, 0, 0);
+        });
+    </script>
+</body>
+</html>
